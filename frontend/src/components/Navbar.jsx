@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { authAPI, tokenStorage } from '../api/auth';
 import logo from '../assets/logo.png';
-import Swal from 'sweetalert2'; // 1. 引入 SweetAlert2
+import Swal from 'sweetalert2'; 
 
 export default function Navbar() {
   const location = useLocation();
@@ -26,15 +26,13 @@ export default function Navbar() {
     }
   }, [location]);
 
-  // 2. 优化后的登出逻辑
   const handleLogout = async () => {
-    // 使用 SweetAlert2 展示美观的确认框
     const result = await Swal.fire({
       title: 'Ready to leave?',
       text: "You will need to login again to access your dashboard.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: 'var(--primary-color)', // 使用你 CSS 中的变量色
+      confirmButtonColor: 'var(--primary-color)', 
       cancelButtonColor: '#d33',
       confirmButtonText: 'Yes, log me out!',
       cancelButtonText: 'Cancel',
@@ -42,7 +40,6 @@ export default function Navbar() {
       borderRadius: '16px'
     });
 
-    // 如果用户点击了确认
     if (result.isConfirmed) {
       setIsLoading(true);
       try {
@@ -58,7 +55,6 @@ export default function Navbar() {
         setCurrentUser(null);
         document.body.classList.remove('logged-in');
 
-        // 登出成功后的提示
         await Swal.fire({
           icon: 'success',
           title: 'Logged Out',
