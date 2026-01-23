@@ -434,32 +434,24 @@ footer {
 .password-toggle {
     position: absolute;
     right: 12px;
+    top: 50%; 
+    transform: translateY(-50%); 
     background: none;
     border: none;
     padding: 0;
     margin: 0;
-    font-size: 0.9rem; 
+    font-size: 1rem; 
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gray-color);
+    color: #666; 
     cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.3s ease, color 0.2s ease;
-    opacity: 0;
-    pointer-events: none; 
+    transition: transform 0.2s ease, color 0.2s ease;
+    z-index: 2; 
 }
 
 .password-toggle:hover {
-    transform: scale(1.1);
-    color: var(--primary-color);
-}
-
-.password-toggle.show-password-icon {
-    opacity: 1;
-    pointer-events: auto; 
-}
-
-.password-toggle.active {
+    transform: translateY(-50%) scale(1.1); 
     color: var(--primary-color);
 }
 
