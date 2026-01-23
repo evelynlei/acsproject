@@ -434,32 +434,24 @@ footer {
 .password-toggle {
     position: absolute;
     right: 12px;
+    top: 50%; 
+    transform: translateY(-50%); 
     background: none;
     border: none;
     padding: 0;
     margin: 0;
-    font-size: 0.9rem; 
+    font-size: 1rem; 
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gray-color);
+    color: #666; 
     cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.3s ease, color 0.2s ease;
-    opacity: 0;
-    pointer-events: none; 
+    transition: transform 0.2s ease, color 0.2s ease;
+    z-index: 2; 
 }
 
 .password-toggle:hover {
-    transform: scale(1.1);
-    color: var(--primary-color);
-}
-
-.password-toggle.show-password-icon {
-    opacity: 1;
-    pointer-events: auto; 
-}
-
-.password-toggle.active {
+    transform: translateY(-50%) scale(1.1); 
     color: var(--primary-color);
 }
 
@@ -491,4 +483,37 @@ body.logged-in .hero-btns {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;       
+    padding-left: 15px;      
+    border-left: 1px solid var(--light-gray); 
+}
+
+.user-info-badge {
+    display: flex;
+    flex-direction: column;  
+    align-items: flex-end;   
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.admin-tag {
+    background: #111827;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;      
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }

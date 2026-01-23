@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 export default function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState({ text: '', color: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,68 +21,50 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const result = await authAPI.login(formData.email, formData.password);
-      
       if (result.error) {
         setMessage({ text: result.error, color: 'var(--error-color)' });
       } else {
-        // Save tokens and user info
         tokenStorage.setTokens(result.accessToken, result.refreshToken);
         tokenStorage.setUser({ id: result.userId, name: result.name, email: result.email, is_admin: result.isAdmin === 1 });
-        
         setMessage({ text: 'Success! Redirecting...', color: 'var(--success-color)' });
-        setTimeout(() => navigate('/dashboard'), 1000);
+        setTimeout(() => navigate(result.isAdmin === 1 ? '/admin' : '/dashboard'), 1000);
       }
     } catch (err) {
       setMessage({ text: 'Error: Unable to connect to server', color: 'var(--error-color)' });
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleForgotPassword = () => {
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
     const email = prompt('Please enter your registered email address:');
-    if (email) {
-      alert('If this email is in our system, a password reset link will be sent to ' + email);
-    }
+    if (email) alert('If this email is in our system, a reset link will be sent to ' + email);
   };
 
   return (
     <>
-      <main>
+      <main className="page-transition">
         <section className="auth-container">
-          <h2>Login to ACS</h2>
-          <div className="message-box" style={{ color: message.color }}>
+          <h2>Login to Your Account</h2>
+          <div className="message-box" style={{ color: message.color, minHeight: '20px', marginBottom: '10px' }}>
             {message.text}
           </div>
 
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <label htmlFor="login-id">Email</label>
-              <input
-                type="text"
-                id="login-id"
-                placeholder="Enter email"
-                required
-                value={formData.id}
-                onChange={handleInputChange}
-              />
+              <label htmlFor="login-id">Email Address</label>
+              <input type="text" id="login-id" placeholder="example@email.com" required value={formData.email} onChange={handleInputChange} />
             </div>
 
             <div className="input-group">
-              <div className="label-wrapper">
+              <div className="label-wrapper" style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <label htmlFor="login-pass">Password</label>
-                <a href="#" className="forgot-link" onClick={(e) => {
-                  e.preventDefault();
-                  handleForgotPassword();
-                }}>
-                  Forgot Password?
-                </a>
+                <button type="button" className="btn-text" onClick={handleForgotPassword} style={{ fontSize: '0.8rem', padding: 0 }}>Forgot Password?</button>
               </div>
-              <div className="password-field-container">
+              <div className="password-field-container" style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="login-pass"
@@ -90,15 +72,18 @@ export default function Login() {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
+                  style={{ paddingRight: '45px' }}
                 />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ opacity: formData.password.length > 0 ? 1 : 0, pointerEvents: formData.password.length > 0 ? 'auto' : 'none' }}
-                >
-                  <i className={`fas ${showPassword ? 'fa-eye' : 'fa-eye-slash'}`}></i>
-                </button>
+                {formData.password.length > 0 && (
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ opacity: 1, pointerEvents: 'auto' }}
+                  >
+                    <i className={`fas ${showPassword ? 'fa-eye' : 'fa-eye-slash'}`}></i>
+                  </button>
+                )}
               </div>
             </div>
 

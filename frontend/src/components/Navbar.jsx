@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { authAPI, tokenStorage } from '../api/auth';
-import logo from '../assets/react.svg';
+import logo from '../assets/logo.png';
+import Swal from 'sweetalert2'; 
 
 export default function Navbar() {
   const location = useLocation();
@@ -11,7 +12,6 @@ export default function Navbar() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in from token storage
     const user = tokenStorage.getUser();
     const accessToken = tokenStorage.getAccessToken();
     
@@ -27,31 +27,52 @@ export default function Navbar() {
   }, [location]);
 
   const handleLogout = async () => {
-    if (!confirm('Are you sure you want to log out?')) return;
-    
-    setIsLoading(true);
-    try {
-      const accessToken = tokenStorage.getAccessToken();
-      const refreshToken = tokenStorage.getRefreshToken();
-      
-      if (accessToken && refreshToken) {
-        await authAPI.logout(accessToken, refreshToken);
+    const result = await Swal.fire({
+      title: 'Ready to leave?',
+      text: "You will need to login again to access your dashboard.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: 'var(--primary-color)', 
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, log me out!',
+      cancelButtonText: 'Cancel',
+      background: '#fff',
+      borderRadius: '16px'
+    });
+
+    if (result.isConfirmed) {
+      setIsLoading(true);
+      try {
+        const accessToken = tokenStorage.getAccessToken();
+        const refreshToken = tokenStorage.getRefreshToken();
+        
+        if (accessToken && refreshToken) {
+          await authAPI.logout(accessToken, refreshToken);
+        }
+        
+        tokenStorage.clear();
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+        document.body.classList.remove('logged-in');
+
+        await Swal.fire({
+          icon: 'success',
+          title: 'Logged Out',
+          text: 'You have been safely logged out.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        navigate('/');
+      } catch (err) {
+        console.error('Logout error:', err);
+        tokenStorage.clear();
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+        navigate('/');
+      } finally {
+        setIsLoading(false);
       }
-      
-      tokenStorage.clear();
-      setIsLoggedIn(false);
-      setCurrentUser(null);
-      document.body.classList.remove('logged-in');
-      navigate('/');
-    } catch (err) {
-      console.error('Logout error:', err);
-      // Still clear local storage even if API call fails
-      tokenStorage.clear();
-      setIsLoggedIn(false);
-      setCurrentUser(null);
-      navigate('/');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -72,52 +93,31 @@ export default function Navbar() {
           </li>
           {!isLoggedIn && (
             <>
-              <li>
-                <Link to="/register" className={location.pathname === '/register' ? 'active' : ''}>
-                  Register
-                </Link>
-              </li>
-              <li>
-                <Link to="/login" className={location.pathname === '/login' ? 'active' : ''}>
-                  Login
-                </Link>
-              </li>
+              <li><Link to="/register" className={location.pathname === '/register' ? 'active' : ''}>Register</Link></li>
+              <li><Link to="/login" className={location.pathname === '/login' ? 'active' : ''}>Login</Link></li>
             </>
           )}
           {isLoggedIn && (
             <>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontWeight: 700, color: 'var(--text-color)' }}>
-                  {currentUser?.name || 'User'}
-                </span>
-                {currentUser?.is_admin === true && (
-                  <span
-                    style={{
-                      background: '#111827',
-                      color: '#fff',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      padding: '4px 10px',
-                      borderRadius: '999px',
-                      letterSpacing: '0.3px'
-                    }}
-                  >
-                    Admin
-                  </span>
-                )}
-              </li>
               <li>
-                <Link to="/dashboard">
-                  Dashboard
+                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>
+                Dashboard
                 </Link>
               </li>
+              <li className="user-profile-section">
+                <div className="user-info-badge">
+                  <span className="user-name">
+                    {currentUser?.name || 'User'}
+                  </span>
+                  {currentUser?.is_admin === true && (
+                    <span className="admin-tag">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              </li>
               <li>
-                <button 
-                  onClick={handleLogout} 
-                  className="btn-outline" 
-                  style={{ padding: '5px 15px' }}
-                  disabled={isLoading}
-                >
+                <button onClick={handleLogout} className="btn-outline" style={{ padding: '5px 15px' }} disabled={isLoading}>
                   {isLoading ? 'Logging Out...' : 'Log Out'}
                 </button>
               </li>
