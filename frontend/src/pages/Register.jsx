@@ -84,20 +84,34 @@ export default function Register() {
 
             <div className="input-group">
               <label htmlFor="reg-pass">Password</label>
-              <div className="password-field-container">
+              <div className="password-field-container" style={{ position: 'relative' }}>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'} 
                   id="reg-pass"
                   placeholder="Enter your password"
                   required
-                  value={formData.pass}
+                  value={formData.password} 
                   onChange={handleInputChange}
+                  style={{ paddingRight: '40px' }} 
                 />
+                
                 <button
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ opacity: formData.password.length > 0 ? 1 : 0, pointerEvents: formData.password.length > 0 ? 'auto' : 'none' }}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--primary-color)',
+                    opacity: formData.password.length > 0 ? 1 : 0,
+                    pointerEvents: formData.password.length > 0 ? 'auto' : 'none',
+                    transition: 'opacity 0.3s ease'
+                  }}
                 >
                   <i className={`fas ${showPassword ? 'fa-eye' : 'fa-eye-slash'}`}></i>
                 </button>
