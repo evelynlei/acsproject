@@ -40,7 +40,7 @@ export default function Admin() {
           </div>
         </div>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

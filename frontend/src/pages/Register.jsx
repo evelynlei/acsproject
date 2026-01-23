@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, tokenStorage } from '../api/auth';
 import Footer from '../components/Footer';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+
 
 export default function Register() {
   const navigate = useNavigate();
@@ -90,16 +92,19 @@ export default function Register() {
                   id="reg-pass"
                   placeholder="Enter your password"
                   required
-                  value={formData.pass}
+                  value={formData.password}  // <-- fix here
                   onChange={handleInputChange}
                 />
                 <button
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ opacity: formData.password.length > 0 ? 1 : 0, pointerEvents: formData.password.length > 0 ? 'auto' : 'none' }}
+                  style={{
+                    opacity: formData.password.length > 0 ? 1 : 0,
+                    pointerEvents: formData.password.length > 0 ? 'auto' : 'none'
+                  }}
                 >
-                  <i className={`fas ${showPassword ? 'fa-eye' : 'fa-eye-slash'}`}></i>
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
                 </button>
               </div>
             </div>
@@ -115,7 +120,7 @@ export default function Register() {
           <Link to="/" className="btn-text">← Back to Home</Link>
         </section>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

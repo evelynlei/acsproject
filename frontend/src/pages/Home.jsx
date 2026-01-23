@@ -77,7 +77,7 @@ export default function Home() {
   };
 
   return (
-    <main>
+    <><main>
       <section className="hero">
         <h1>Be the Change You Wish to See</h1>
         <p>Advanced Consulting Services empowers social causes and small businesses to thrive.</p>
@@ -92,9 +92,9 @@ export default function Home() {
       </section>
 
       <section className="campaigns-section">
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto', 
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
           padding: '0 20px',
           marginBottom: '40px'
         }}>
@@ -104,8 +104,8 @@ export default function Home() {
             alignItems: 'center',
             marginBottom: '30px'
           }}>
-            <h2 style={{ 
-              fontSize: '32px', 
+            <h2 style={{
+              fontSize: '32px',
               fontWeight: '700',
               color: '#2c3e50',
               margin: 0
@@ -200,7 +200,7 @@ export default function Home() {
               }}>
                 Be the first to create a campaign and make a difference!
               </p>
-              <button 
+              <button
                 onClick={() => navigate('/dashboard')}
                 className="btn-filled"
               >
@@ -226,8 +226,7 @@ export default function Home() {
                       campaign={campaign}
                       showDelete={!!(isOwner || isAdmin)}
                       deleteDisabled={deletingId === campaign.id}
-                      onDelete={() => handleDelete(campaign.id)}
-                    />
+                      onDelete={() => handleDelete(campaign.id)} />
 
                     {isAdmin && (
                       <div style={{
@@ -274,7 +273,8 @@ export default function Home() {
         </div>
       </section>
 
-      <Footer />
     </main>
+    {/* <Footer /> */}
+    </>
   );
 }

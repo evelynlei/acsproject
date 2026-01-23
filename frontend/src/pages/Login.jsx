@@ -113,7 +113,7 @@ export default function Login() {
           <Link to="/" className="btn-text">← Back to Home</Link>
         </section>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
