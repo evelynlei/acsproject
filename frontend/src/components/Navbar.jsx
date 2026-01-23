@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { authAPI, tokenStorage } from '../api/auth';
-import logo from '../assets/react.svg';
+import logo from '../assets/logo.png';
 
 export default function Navbar() {
   const location = useLocation();
