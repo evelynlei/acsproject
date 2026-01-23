@@ -99,15 +99,23 @@ export default function Navbar() {
           )}
           {isLoggedIn && (
             <>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontWeight: 700, color: 'var(--text-color)' }}>{currentUser?.name || 'User'}</span>
-                {currentUser?.is_admin === true && (
-                  <span style={{ background: '#111827', color: '#fff', fontSize: '12px', fontWeight: 800, padding: '4px 10px', borderRadius: '999px' }}>
-                    Admin
-                  </span>
-                )}
+              <li>
+                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>
+                Dashboard
+                </Link>
               </li>
-              <li><Link to="/dashboard">Dashboard</Link></li>
+              <li className="user-profile-section">
+                <div className="user-info-badge">
+                  <span className="user-name">
+                    {currentUser?.name || 'User'}
+                  </span>
+                  {currentUser?.is_admin === true && (
+                    <span className="admin-tag">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              </li>
               <li>
                 <button onClick={handleLogout} className="btn-outline" style={{ padding: '5px 15px' }} disabled={isLoading}>
                   {isLoading ? 'Logging Out...' : 'Log Out'}

@@ -484,3 +484,36 @@ body.logged-in .hero-btns {
         transform: rotate(360deg);
     }
 }
+
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;       
+    padding-left: 15px;      
+    border-left: 1px solid var(--light-gray); 
+}
+
+.user-info-badge {
+    display: flex;
+    flex-direction: column;  
+    align-items: flex-end;   
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.admin-tag {
+    background: #111827;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;      
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
