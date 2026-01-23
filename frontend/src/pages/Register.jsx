@@ -44,7 +44,7 @@ export default function Register() {
     <>
       <main className="page-transition">
         <section className="auth-container">
-          <h2>Create Account</h2>
+          <h2>Create an Account</h2>
           <div className="message-box" style={{ color: message.color, minHeight: '20px', marginBottom: '10px' }}>
             {message.text}
           </div>
@@ -52,12 +52,12 @@ export default function Register() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <label htmlFor="reg-username">Username</label>
-              <input type="text" id="reg-username" placeholder="Choose a username" required value={formData.name} onChange={handleInputChange} />
+              <input type="text" id="reg-username" placeholder="Enter your username" required value={formData.name} onChange={handleInputChange} />
             </div>
 
             <div className="input-group">
               <label htmlFor="reg-email">Email Address</label>
-              <input type="email" id="reg-email" placeholder="example@mail.com" required value={formData.email} onChange={handleInputChange} />
+              <input type="email" id="reg-email" placeholder="example@email.com" required value={formData.email} onChange={handleInputChange} />
             </div>
 
             <div className="input-group">

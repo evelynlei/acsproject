@@ -48,15 +48,15 @@ export default function Login() {
     <>
       <main className="page-transition">
         <section className="auth-container">
-          <h2>Login to ACS</h2>
+          <h2>Login to Your Account</h2>
           <div className="message-box" style={{ color: message.color, minHeight: '20px', marginBottom: '10px' }}>
             {message.text}
           </div>
 
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <label htmlFor="login-id">Email</label>
-              <input type="text" id="login-id" placeholder="Enter email" required value={formData.email} onChange={handleInputChange} />
+              <label htmlFor="login-id">Username/Email</label>
+              <input type="text" id="login-id" placeholder="Enter your username or email" required value={formData.email} onChange={handleInputChange} />
             </div>
 
             <div className="input-group">
