@@ -55,8 +55,8 @@ export default function Login() {
 
           <form onSubmit={handleSubmit}>
             <div className="input-group">
-              <label htmlFor="login-id">Username/Email</label>
-              <input type="text" id="login-id" placeholder="Enter your username or email" required value={formData.email} onChange={handleInputChange} />
+              <label htmlFor="login-id">Email Address</label>
+              <input type="text" id="login-id" placeholder="example@email.com" required value={formData.email} onChange={handleInputChange} />
             </div>
 
             <div className="input-group">
