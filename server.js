@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/auth.routes');
 const campaignRoutes = require('./routes/campaigns.routes');
+const itemRoutes = require('./routes/items.routes');
 const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.static('public'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/campaigns', campaignRoutes);
+app.use('/api/items', itemRoutes);
 app.use('/api/admin', adminRoutes);
 
 const PORT = 3000;
