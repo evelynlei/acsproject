@@ -133,10 +133,29 @@
   color: #5a6c7d;
   line-height: 1.6;
   margin: 0;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 8px;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.campaign-description::-webkit-scrollbar {
+  width: 6px;
+}
+
+.campaign-description::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.campaign-description::-webkit-scrollbar-thumb {
+  background: #bdc3c7;
+  border-radius: 10px;
+}
+
+.campaign-description::-webkit-scrollbar-thumb:hover {
+  background: #95a5a6;
 }
 
 /* Responsive Design */

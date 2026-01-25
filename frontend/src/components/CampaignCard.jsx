@@ -1,7 +1,12 @@
 import PropTypes from 'prop-types';
 import './CampaignCard.css';
+import { tokenStorage } from '../api/auth';
 
 export default function CampaignCard({ campaign, showDelete = false, onDelete, deleteDisabled = false }) {
+  const user = tokenStorage.getUser();
+  // get if any user log in
+  const isLoggedIn = user !== null;
+
   const formatDate = (dateString) => {
     // SQLite returns datetime in format: "YYYY-MM-DD HH:MM:SS"
     // We need to treat it as UTC time
@@ -74,12 +79,12 @@ export default function CampaignCard({ campaign, showDelete = false, onDelete, d
               Delete
             </button>
           )}
-          <span 
+          {isLoggedIn && <span 
             className="campaign-status-badge"
             style={{ backgroundColor: getStatusColor(campaign.status) }}
           >
             {campaign.status}
-          </span>
+          </span>}
         </div>
       </div>
 
