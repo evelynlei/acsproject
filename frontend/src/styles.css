@@ -262,6 +262,7 @@ button, .btn-link {
 }
 
 .main-footer {
+    display: flex;
     background-color: var(--footer-bg);
     color: #f8fafc;
     padding: 60px 8% 20px;
