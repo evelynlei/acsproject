@@ -28,9 +28,10 @@ db.serialize(() => {
 
     // Seed default admin user (idempotent)
     db.run(
-        `INSERT OR IGNORE INTO users (name, email, password, is_admin)
-         VALUES (?, ?, ?, ?)`,
+        `INSERT OR IGNORE INTO users (id ,name, email, password, is_admin)
+         VALUES (?, ?, ?, ?, ?)`,
         [
+            9,
             'eve',
             'eve@gmail.com',
             '$2a$10$IDPM4nv.KQ0iXeaZDnrkjOiLeSWtXz.26ace6dIYL6m0AWJHqS.d.',
