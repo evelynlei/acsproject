@@ -12,6 +12,30 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
+  const featuredCampaigns = [
+    {
+      id: 'feat-1',
+      title: "Clean Environment Initiative",
+      description: "A campaign to promote a clean and healthy environment through community action.",
+      image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      btnText: "View Campaign"
+    },
+    {
+      id: 'feat-2',
+      title: "Mental Health Awareness",
+      description: "This campaign supports mental health awareness and encourages open conversations.",
+      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      btnText: "Participate"
+    },
+    {
+      id: 'feat-3',
+      title: "Support Local Communities",
+      description: "Join us in building stronger communities by supporting local businesses and initiatives.",
+      image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
+      btnText: "Learn More"
+    }
+  ];
+
   useEffect(() => {
     loadCampaigns();
   }, [location.key]);
@@ -85,6 +109,7 @@ export default function Home() {
   return (
     <> 
       <main>
+        {/* 1. Hero Section */}
         <section className="hero">
           <h1>Be the Change You Wish to See</h1>
           <p>Advanced Consulting Services empowers social causes and small businesses to thrive.</p>
@@ -98,7 +123,72 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="campaigns-section">
+        {/* 2. NEW: Featured Initiatives (Based on your Image) */}
+        <section style={{ padding: '60px 20px', backgroundColor: '#fff' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <h2 style={{ 
+              textAlign: 'center', 
+              fontSize: '32px', 
+              color: '#2c3e50', 
+              marginBottom: '40px',
+              fontWeight: '700'
+            }}>
+              Featured Initiatives
+            </h2>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+              gap: '30px' 
+            }}>
+              {featuredCampaigns.map(item => (
+                <div key={item.id} style={{
+                  background: '#fff',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.1)',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.3s ease'
+                }}>
+                  {/* Card Image */}
+                  <div style={{ height: '200px', overflow: 'hidden' }}>
+                    <img 
+                      src={item.image} 
+                      alt={item.title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+                  
+                  {/* Card Content */}
+                  <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', color: '#1e293b' }}>
+                      {item.title}
+                    </h3>
+                    <p style={{ 
+                      color: '#64748b', 
+                      fontSize: '0.95rem', 
+                      lineHeight: '1.6', 
+                      marginBottom: '20px',
+                      flex: 1 
+                    }}>
+                      {item.description}
+                    </p>
+                    <button 
+                      className="btn-filled" 
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px' }}
+                    >
+                      {item.btnText}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Active Campaigns Section */}
+        <section className="campaigns-section" style={{ backgroundColor: '#f8fafc' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
             <div style={{ 
               display: 'flex', 
