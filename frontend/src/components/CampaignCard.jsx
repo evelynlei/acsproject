@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import './CampaignCard.css';
 import { tokenStorage } from '../api/auth';
 
-export default function CampaignCard({ campaign, showDelete = false, onDelete, deleteDisabled = false }) {
+export default function CampaignCard({ campaign, showDelete = false, onDelete, deleteDisabled = false, isAdmin = false, onAdminStatus }) {
   const user = tokenStorage.getUser();
   // get if any user log in
   const isLoggedIn = user !== null;
@@ -92,6 +92,29 @@ export default function CampaignCard({ campaign, showDelete = false, onDelete, d
         <h3 className="campaign-title">{campaign.title}</h3>
         <p className="campaign-description">{campaign.description}</p>
       </div>
+
+      {isAdmin && (
+        <div className="campaign-admin-actions">
+          {(campaign.status !== 'Approved') && (
+            <button
+              type="button"
+              className="campaign-admin-approve"
+              onClick={() => onAdminStatus && onAdminStatus(campaign.id, 'Approved')}
+            >
+              Approve
+            </button>
+          )}
+          {(campaign.status !== 'Rejected') && (
+            <button
+              type="button"
+              className="campaign-admin-reject"
+              onClick={() => onAdminStatus && onAdminStatus(campaign.id, 'Rejected')}
+            >
+              Reject
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -109,4 +132,7 @@ CampaignCard.propTypes = {
   showDelete: PropTypes.bool,
   onDelete: PropTypes.func,
   deleteDisabled: PropTypes.bool
+  ,
+  isAdmin: PropTypes.bool,
+  onAdminStatus: PropTypes.func
 };

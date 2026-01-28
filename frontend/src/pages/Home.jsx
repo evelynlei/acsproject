@@ -236,44 +236,15 @@ export default function Home() {
                   const isOwner = user?.id && campaign.user_id === user.id;
                   const isAdmin = user?.is_admin === true;
                   return (
-                    <div key={campaign.id} style={{ position: 'relative' }}>
-                      <CampaignCard
-                        campaign={campaign}
-                        showDelete={!!(isOwner || isAdmin)}
-                        deleteDisabled={deletingId === campaign.id}
-                        onDelete={() => handleDelete(campaign.id)}
-                      />
-                      
-                      {isAdmin && (
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '15px',
-                          right: '15px',
-                          display: 'flex',
-                          gap: '8px',
-                          zIndex: 2
-                        }}>
-                          {(campaign.status !== 'Approved') && (
-                            <button
-                              className="btn-filled"
-                              style={{ padding: '6px 12px', fontSize: '12px', background: '#22c55e' }}
-                              onClick={() => handleAdminStatus(campaign.id, 'Approved')}
-                            >
-                              Approve
-                            </button>
-                          )}
-                          {(campaign.status !== 'Rejected') && (
-                            <button
-                              className="btn-filled"
-                              style={{ padding: '6px 12px', fontSize: '12px', background: '#ef4444' }}
-                              onClick={() => handleAdminStatus(campaign.id, 'Rejected')}
-                            >
-                              Reject
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <CampaignCard
+                      key={campaign.id}
+                      campaign={campaign}
+                      showDelete={!!(isOwner || isAdmin)}
+                      deleteDisabled={deletingId === campaign.id}
+                      onDelete={() => handleDelete(campaign.id)}
+                      isAdmin={isAdmin}
+                      onAdminStatus={handleAdminStatus}
+                    />
                   );
                 })}
               </div>
