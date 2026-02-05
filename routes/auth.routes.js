@@ -10,9 +10,8 @@ const {
 
 const router = express.Router();
 
-/* Register */
 router.post('/register', (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   if (!name || !email || !password)
     return res.status(400).json({ error: 'Missing required fields' });
@@ -26,8 +25,8 @@ router.post('/register', (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   db.run(
-    "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-    [name, email, hashedPassword],
+    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+    [name, email, hashedPassword, role || 'user'], 
     function (err) {
       if (err) {
         if (err.message.includes('UNIQUE constraint failed')) {
@@ -49,6 +48,7 @@ router.post('/register', (req, res) => {
           userId: this.lastID,
           name,
           email,
+          role: role || 'user', 
           isAdmin: 0
         })
       );
@@ -56,7 +56,6 @@ router.post('/register', (req, res) => {
   );
 });
 
-/* Login */
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -78,13 +77,13 @@ router.post('/login', (req, res) => {
         userId: user.id,
         name: user.name,
         email: user.email,
+        role: user.role, 
         isAdmin: user.is_admin === 1 ? 1 : 0
       })
     );
   });
 });
 
-/* Refresh */
 router.post('/refresh', (req, res) => {
   const { refreshToken } = req.body;
   const decoded = verifyToken(refreshToken);
@@ -101,7 +100,6 @@ router.post('/refresh', (req, res) => {
   );
 });
 
-/* Logout */
 router.post('/logout', authenticateToken, (req, res) => {
   const { refreshToken } = req.body;
   db.run(

@@ -133,7 +133,7 @@ export default function Home() {
               marginBottom: '40px',
               fontWeight: '700'
             }}>
-              Featured Initiatives
+              Business Campaigns
             </h2>
             
             <div style={{ 
@@ -197,7 +197,7 @@ export default function Home() {
               marginBottom: '30px' 
             }}>
               <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#2c3e50', margin: 0 }}>
-                Active Campaigns
+                Social Cause Campaigns
               </h2>
               {campaigns.length > 0 && (
                 <span style={{ fontSize: '16px', color: '#94a3b8', fontWeight: '500' }}>

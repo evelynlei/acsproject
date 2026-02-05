@@ -5,34 +5,67 @@ import Footer from '../components/Footer';
 
 export default function Register() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    email: '', 
+    password: '',
+    role: 'user' 
+  });
   const [message, setMessage] = useState({ text: '', color: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    const fieldMap = {
-      'reg-username': 'name',
-      'reg-email': 'email',
-      'reg-pass': 'password'
-    };
-    setFormData(prev => ({ ...prev, [fieldMap[id]]: value }));
+    const { id, name, value } = e.target;
+    
+    if (name === 'role') {
+      setFormData(prev => ({ ...prev, role: value }));
+    } else {
+      const fieldMap = {
+        'reg-username': 'name',
+        'reg-email': 'email',
+        'reg-pass': 'password'
+      };
+      setFormData(prev => ({ ...prev, [fieldMap[id]]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const result = await authAPI.register(formData.name, formData.email, formData.password);
+      const result = await authAPI.register(
+        formData.name, 
+        formData.email, 
+        formData.password, 
+        formData.role 
+      );
+
       if (result.error) {
         setMessage({ text: `Error: ${result.error}`, color: 'var(--error-color)' });
       } else {
         tokenStorage.setTokens(result.accessToken, result.refreshToken);
-        tokenStorage.setUser({ id: result.userId, name: result.name, email: result.email, is_admin: result.isAdmin === 1 });
-        setMessage({ text: 'Success! Redirecting to dashboard...', color: 'var(--success-color)' });
-        setTimeout(() => navigate('/dashboard'), 1500);
-      }
+  
+  const finalRole = result.role || formData.role; 
+
+  tokenStorage.setUser({ 
+    id: result.userId, 
+    name: result.name, 
+    email: result.email, 
+    role: finalRole, 
+    is_admin: result.isAdmin === 1 
+  });
+
+  setMessage({ text: 'Success! Redirecting...', color: 'var(--success-color)' });
+  
+  setTimeout(() => {
+    if (finalRole === 'business') {
+      navigate('/business-dashboard'); 
+    } else {
+      navigate('/dashboard');           
+    }
+  }, 1500);
+}
     } catch (err) {
       setMessage({ text: 'Error: Unable to connect to server', color: 'var(--error-color)' });
     } finally {
@@ -50,6 +83,101 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit}>
+<div style={{ marginBottom: '24px' }}>
+  <label style={{ display: 'block', marginBottom: '12px', fontWeight: '600', color: '#475569' }}>
+    I want to join as:
+  </label>
+  
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+    
+    {/*/ User */}
+    <label 
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        border: formData.role === 'user' ? '2px solid #3b82f6' : '2px solid #e2e8f0', 
+        borderRadius: '12px',
+        backgroundColor: formData.role === 'user' ? '#eff6ff' : '#ffffff', 
+        transition: 'all 0.2s ease',
+        boxShadow: formData.role === 'user' ? '0 4px 6px -1px rgba(59, 130, 246, 0.1)' : 'none'
+      }}
+    >
+      <input 
+        type="radio" 
+        name="role" 
+        value="user" 
+        checked={formData.role === 'user'} 
+        onChange={handleInputChange}
+        style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} 
+      />
+      <div style={{ 
+        fontSize: '24px', 
+        marginBottom: '8px', 
+        color: formData.role === 'user' ? '#3b82f6' : '#94a3b8' 
+      }}>
+        <i className="fas fa-heart"></i> 
+      </div>
+      <span style={{ 
+        fontWeight: '600', 
+        color: formData.role === 'user' ? '#1e293b' : '#64748b' 
+      }}>
+        User
+      </span>
+      <span style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+        Social Cause
+      </span>
+    </label>
+
+    {/* Business Owner */}
+    <label 
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        border: formData.role === 'business' ? '2px solid #3b82f6' : '2px solid #e2e8f0',
+        borderRadius: '12px',
+        backgroundColor: formData.role === 'business' ? '#eff6ff' : '#ffffff',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        boxShadow: formData.role === 'business' ? '0 4px 6px -1px rgba(59, 130, 246, 0.1)' : 'none'
+      }}
+    >
+      <input 
+        type="radio" 
+        name="role" 
+        value="business" 
+        checked={formData.role === 'business'} 
+        onChange={handleInputChange}
+        style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+      />
+      <div style={{ 
+        fontSize: '24px', 
+        marginBottom: '8px', 
+        color: formData.role === 'business' ? '#3b82f6' : '#94a3b8' 
+      }}>
+        <i className="fas fa-store"></i> 
+      </div>
+      <span style={{ 
+        fontWeight: '600', 
+        color: formData.role === 'business' ? '#1e293b' : '#64748b' 
+      }}>
+        Business Owner
+      </span>
+      <span style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+        Business
+      </span>
+    </label>
+
+  </div>
+</div>
+
             <div className="input-group">
               <label htmlFor="reg-username">Username</label>
               <input type="text" id="reg-username" placeholder="Enter your username" required value={formData.name} onChange={handleInputChange} />

@@ -23,15 +23,39 @@ export default function Login() {
     setIsLoading(true);
     try {
       const result = await authAPI.login(formData.email, formData.password);
+      
       if (result.error) {
         setMessage({ text: result.error, color: 'var(--error-color)' });
       } else {
         tokenStorage.setTokens(result.accessToken, result.refreshToken);
-        tokenStorage.setUser({ id: result.userId, name: result.name, email: result.email, is_admin: result.isAdmin === 1 });
+
+        const role = result.role || result.userRole || 'user'; 
+        const isAdmin = result.isAdmin === 1 || result.is_admin === true;
+
+        tokenStorage.setUser({ 
+          id: result.userId, 
+          name: result.name, 
+          email: result.email, 
+          role: role.toLowerCase(),             
+          is_admin: isAdmin
+        });
+
         setMessage({ text: 'Success! Redirecting...', color: 'var(--success-color)' });
-        setTimeout(() => navigate(result.isAdmin === 1 ? '/admin' : '/dashboard'), 1000);
+
+        setTimeout(() => {
+          if (isAdmin) {
+            navigate('/admin');
+          } else if (role.toLowerCase() === 'business') {
+            console.log("Redirecting to business dashboard...");
+            navigate('/business-dashboard'); 
+          } else {
+            console.log("Redirecting to standard dashboard...");
+            navigate('/dashboard');           
+          }
+        }, 1000);
       }
     } catch (err) {
+      console.error("Login Error:", err);
       setMessage({ text: 'Error: Unable to connect to server', color: 'var(--error-color)' });
     } finally {
       setIsLoading(false);

@@ -54,11 +54,11 @@ async function authFetch(path, options = {}, { retryOn401 = true } = {}) {
 }
 
 export const authAPI = {
-  register: async (name, email, password) => {
+  register: async (name, email, password, role = 'user') => { 
     const response = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name, email, password, role }) 
     });
     return response.json();
   },
