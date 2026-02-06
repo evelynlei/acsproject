@@ -5,9 +5,7 @@ const requireAdmin = require('../middleware/requireAdmin');
 
 const router = express.Router();
 
-/**
- * PUBLIC: Approved campaigns (no auth)
- */
+
 router.get('/public', (req, res) => {
   db.all(
     `SELECT c.*, u.name as user_name, u.email as user_email 
@@ -23,9 +21,7 @@ router.get('/public', (req, res) => {
   );
 });
 
-/**
- * USER: Get own campaigns
- */
+
 router.get('/', authenticateToken, (req, res) => {
   db.all(
     `SELECT c.*, u.name as user_name, u.email as user_email 
@@ -41,9 +37,7 @@ router.get('/', authenticateToken, (req, res) => {
   );
 });
 
-/**
- * ADMIN: Get all campaigns
- */
+
 router.get('/all', authenticateToken, requireAdmin, (req, res) => {
   db.all(
     `SELECT c.*, u.name as user_name, u.email as user_email 
@@ -58,9 +52,7 @@ router.get('/all', authenticateToken, requireAdmin, (req, res) => {
   );
 });
 
-/**
- * USER: Get campaign by ID
- */
+
 router.get('/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
 
@@ -78,20 +70,26 @@ router.get('/:id', authenticateToken, (req, res) => {
   );
 });
 
-/**
- * USER: Create campaign
- */
+
 router.post('/', authenticateToken, (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, imageUrl, goalAmount, category } = req.body;
 
   if (!title) {
     return res.status(400).json({ error: 'Title is required' });
   }
 
   db.run(
-    `INSERT INTO campaigns (user_id, title, description, status) 
-     VALUES (?, ?, ?, ?)`,
-    [req.userId, title, description, 'Pending'],
+    `INSERT INTO campaigns (user_id, title, description, image_url, goal_amount, category, status) 
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      req.userId, 
+      title, 
+      description, 
+      imageUrl || null, 
+      Number(goalAmount) || 0, 
+      category || 'Social Cause', 
+      'Pending'
+    ],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
 
@@ -110,12 +108,10 @@ router.post('/', authenticateToken, (req, res) => {
   );
 });
 
-/**
- * USER: Update own campaign
- */
+
 router.put('/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
-  const { title, description } = req.body;
+  const { title, description, imageUrl, goalAmount, category } = req.body;
 
   db.get(
     "SELECT * FROM campaigns WHERE id = ? AND user_id = ?",
@@ -130,60 +126,63 @@ router.put('/:id', authenticateToken, (req, res) => {
       const values = [];
 
       if (title !== undefined) {
-        if (!title.trim()) {
-          return res.status(400).json({ error: 'Title cannot be empty' });
-        }
+        if (!title.trim()) return res.status(400).json({ error: 'Title cannot be empty' });
         updates.push('title = ?');
         values.push(title);
       }
-
       if (description !== undefined) {
         updates.push('description = ?');
         values.push(description);
       }
+      if (imageUrl !== undefined) {
+        updates.push('image_url = ?');
+        values.push(imageUrl);
+      }
+      if (goalAmount !== undefined) {
+        updates.push('goal_amount = ?');
+        values.push(Number(goalAmount) || 0);
+      }
+      if (category !== undefined) {
+        updates.push('category = ?');
+        values.push(category);
+      }
 
       updates.push("updated_at = datetime('now')");
-      values.push(id, req.userId);
 
-      if (updates.length === 1) {
+      if (updates.length === 1) { 
         return res.status(400).json({ error: 'No fields to update' });
       }
 
-      db.run(
-        `UPDATE campaigns SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
-        values,
-        function (err) {
-          if (err) return res.status(500).json({ error: err.message });
+      const sql = `UPDATE campaigns SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`;
+      values.push(id, req.userId);
 
-          db.get(
-            `SELECT c.*, u.name as user_name, u.email as user_email 
-             FROM campaigns c 
-             JOIN users u ON c.user_id = u.id 
-             WHERE c.id = ?`,
-            [id],
-            (err, row) => {
-              if (err) return res.status(500).json({ error: err.message });
-              res.json(row);
-            }
-          );
-        }
-      );
+      db.run(sql, values, function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+
+        db.get(
+          `SELECT c.*, u.name as user_name, u.email as user_email 
+           FROM campaigns c 
+           JOIN users u ON c.user_id = u.id 
+           WHERE c.id = ?`,
+          [id],
+          (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(row);
+          }
+        );
+      });
     }
   );
 });
 
-/**
- * ADMIN: Approve / Reject campaign
- */
+
 router.put('/:id/status', authenticateToken, requireAdmin, (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
   const allowed = new Set(['Pending', 'Approved', 'Rejected']);
   if (!status || !allowed.has(status)) {
-    return res.status(400).json({
-      error: 'Invalid status. Allowed: Pending, Approved, Rejected'
-    });
+    return res.status(400).json({ error: 'Invalid status' });
   }
 
   db.run(
@@ -191,9 +190,7 @@ router.put('/:id/status', authenticateToken, requireAdmin, (req, res) => {
     [status, id],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      if (this.changes === 0) {
-        return res.status(404).json({ error: 'Campaign not found' });
-      }
+      if (this.changes === 0) return res.status(404).json({ error: 'Campaign not found' });
 
       db.get(
         `SELECT c.*, u.name as user_name, u.email as user_email 
@@ -210,9 +207,7 @@ router.put('/:id/status', authenticateToken, requireAdmin, (req, res) => {
   );
 });
 
-/**
- * USER or ADMIN: Delete campaign
- */
+
 router.delete('/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
 
@@ -223,40 +218,24 @@ router.delete('/:id', authenticateToken, (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
       if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
 
-      // Owner delete
+      const executeDelete = () => {
+        db.run("DELETE FROM campaigns WHERE id = ?", [id], (err) => {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json({ message: 'Campaign deleted successfully' });
+        });
+      };
+
       if (campaign.user_id === req.userId) {
-        db.run(
-          "DELETE FROM campaigns WHERE id = ?",
-          [id],
-          err => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ message: 'Campaign deleted successfully' });
-          }
-        );
-        return;
+        return executeDelete();
       }
 
-      // Admin delete
-      db.get(
-        "SELECT is_admin FROM users WHERE id = ?",
-        [req.userId],
-        (err, user) => {
-          if (err) return res.status(500).json({ error: err.message });
-          if (!user) return res.status(401).json({ error: 'User not found' });
-          if (user.is_admin !== 1) {
-            return res.status(403).json({ error: 'Unauthorized' });
-          }
-
-          db.run(
-            "DELETE FROM campaigns WHERE id = ?",
-            [id],
-            err => {
-              if (err) return res.status(500).json({ error: err.message });
-              res.json({ message: 'Campaign deleted successfully' });
-            }
-          );
+      db.get("SELECT is_admin FROM users WHERE id = ?", [req.userId], (err, user) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (user && user.is_admin === 1) {
+          return executeDelete();
         }
-      );
+        res.status(403).json({ error: 'Unauthorized' });
+      });
     }
   );
 });

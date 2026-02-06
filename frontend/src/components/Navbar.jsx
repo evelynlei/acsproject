@@ -85,37 +85,59 @@ export default function Navbar() {
             ACS Consulting
           </Link>
         </div>
+        
         <ul className="nav-links ready">
           <li>
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
               Home
             </Link>
           </li>
+
           {!isLoggedIn && (
             <>
               <li><Link to="/register" className={location.pathname === '/register' ? 'active' : ''}>Register</Link></li>
               <li><Link to="/login" className={location.pathname === '/login' ? 'active' : ''}>Login</Link></li>
             </>
           )}
+
           {isLoggedIn && (
             <>
               <li>
-                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>
-                Dashboard
+                <Link 
+                  to={currentUser?.role === 'business' ? '/business-owner' : '/dashboard'} 
+                  className={location.pathname === '/business-owner' || location.pathname === '/dashboard' ? 'active' : ''}
+                >
+                  Dashboard
                 </Link>
               </li>
+
+              {currentUser?.role === 'business' && (
+                <li>
+                  <Link 
+                    to="/business-dashboard" 
+                    className={location.pathname === '/business-dashboard' ? 'active' : ''}
+                  >
+                    Campaigns
+                  </Link>
+                </li>
+              )}
+
               <li className="user-profile-section">
                 <div className="user-info-badge">
                   <span className="user-name">
                     {currentUser?.name || 'User'}
+                    {currentUser?.role === 'business' && (
+                      <span style={{ fontSize: '10px', marginLeft: '5px', opacity: 0.6, verticalAlign: 'middle' }}>
+                        (Partner)
+                      </span>
+                    )}
                   </span>
                   {currentUser?.is_admin === true && (
-                    <span className="admin-tag">
-                      Admin
-                    </span>
+                    <span className="admin-tag">Admin</span>
                   )}
                 </div>
               </li>
+
               <li>
                 <button onClick={handleLogout} className="btn-outline" style={{ padding: '5px 15px' }} disabled={isLoading}>
                   {isLoading ? 'Logging Out...' : 'Log Out'}

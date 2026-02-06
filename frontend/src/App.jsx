@@ -4,26 +4,22 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import BusinessDashboard from './pages/BusinessOwner';
+import BusinessOwner from './pages/BusinessOwner'; 
+import BusinessDashboard from './pages/BusinessDashboard'; 
+//CreateCampaign
+import CreateCampaign from './pages/CreateCampaign'; 
 import Admin from './pages/Admin';
 import { tokenStorage } from './api/auth'; 
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const user = tokenStorage.getUser();
-  
-  if (!user) {
-    return <Navigate replace to="/login" />;
-  }
+  if (!user) return <Navigate replace to="/login" />;
 
   if (allowedRoles.length > 0) {
     const hasRole = allowedRoles.includes(user.role);
     const isAdmin = user.is_admin && allowedRoles.includes('admin');
-    
-    if (!hasRole && !isAdmin) {
-      return <Navigate replace to="/" />;
-    }
+    if (!hasRole && !isAdmin) return <Navigate replace to="/" />;
   }
-
   return children;
 };
 
@@ -37,14 +33,26 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         <Route path="/dashboard" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['user']}>
             <Dashboard />
           </ProtectedRoute>
         } />
 
+        <Route path="/business-owner" element={
+          <ProtectedRoute allowedRoles={['business']}>
+            <BusinessOwner />
+          </ProtectedRoute>
+        } />
+
         <Route path="/business-dashboard" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['business']}>
             <BusinessDashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/create-campaign" element={
+          <ProtectedRoute allowedRoles={['business']}>
+            <CreateCampaign />
           </ProtectedRoute>
         } />
 
