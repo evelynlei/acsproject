@@ -16,6 +16,15 @@ db.serialize(() => {
     )`);
 
     db.run(
+        "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'",
+        (err) => {
+            if (err && !String(err.message || '').includes('duplicate column name')) {
+                console.error('Error adding role column:', err.message);
+            }
+        }
+    );
+
+    db.run(
         "ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0",
         (err) => {
             if (err && !String(err.message || '').includes('duplicate column name')) {
@@ -25,9 +34,9 @@ db.serialize(() => {
     );
 
     db.run(
-        `INSERT OR IGNORE INTO users (id ,name, email, password, is_admin)
-         VALUES (?, ?, ?, ?, ?)`,
-        [9, 'eve', 'eve@gmail.com', '$2a$10$IDPM4nv.KQ0iXeaZDnrkjOiLeSWtXz.26ace6dIYL6m0AWJHqS.d.', 1],
+        `INSERT OR IGNORE INTO users (id ,name, email, password, role, is_admin)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [9, 'eve', 'eve@gmail.com', '$2a$10$IDPM4nv.KQ0iXeaZDnrkjOiLeSWtXz.26ace6dIYL6m0AWJHqS.d.', 'user', 1],
         (err) => { if (err) console.error('Error seeding admin user:', err.message); }
     );
     

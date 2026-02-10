@@ -128,7 +128,7 @@ export default function Navbar() {
                     {currentUser?.name || 'User'}
                     {currentUser?.role === 'business' && (
                       <span style={{ fontSize: '10px', marginLeft: '5px', opacity: 0.6, verticalAlign: 'middle' }}>
-                        (Partner)
+                        (Business)
                       </span>
                     )}
                   </span>

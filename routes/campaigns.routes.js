@@ -4,6 +4,7 @@ const authenticateToken = require('../middleware/authenticateToken');
 const requireAdmin = require('../middleware/requireAdmin');
 
 const router = express.Router();
+const ALLOWED_CATEGORIES = new Set(['Social Cause', 'Business']);
 
 
 router.get('/public', (req, res) => {
@@ -73,45 +74,60 @@ router.get('/:id', authenticateToken, (req, res) => {
 
 router.post('/', authenticateToken, (req, res) => {
   const { title, description, imageUrl, goalAmount, category } = req.body;
+  const normalizedCategory = typeof category === 'string' ? category.trim() : category;
+  const finalCategory = normalizedCategory || 'Social Cause';
 
   if (!title) {
     return res.status(400).json({ error: 'Title is required' });
   }
+  if (!ALLOWED_CATEGORIES.has(finalCategory)) {
+    return res.status(400).json({ error: 'Category must be either Social Cause or Business' });
+  }
 
-  db.run(
-    `INSERT INTO campaigns (user_id, title, description, image_url, goal_amount, category, status) 
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      req.userId, 
-      title, 
-      description, 
-      imageUrl || null, 
-      Number(goalAmount) || 0, 
-      category || 'Social Cause', 
-      'Pending'
-    ],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-
-      db.get(
-        `SELECT c.*, u.name as user_name, u.email as user_email 
-         FROM campaigns c 
-         JOIN users u ON c.user_id = u.id 
-         WHERE c.id = ?`,
-        [this.lastID],
-        (err, row) => {
-          if (err) return res.status(500).json({ error: err.message });
-          res.status(201).json(row);
-        }
-      );
+  db.get("SELECT role FROM users WHERE id = ?", [req.userId], (err, user) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!user) return res.status(401).json({ error: 'User not found' });
+    if (user.role !== 'business' && finalCategory === 'Business') {
+      return res.status(403).json({ error: 'Only business users can publish Business campaigns' });
     }
-  );
+
+    db.run(
+      `INSERT INTO campaigns (user_id, title, description, image_url, goal_amount, category, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        req.userId,
+        title,
+        description,
+        imageUrl || null,
+        Number(goalAmount) || 0,
+        finalCategory,
+        'Pending'
+      ],
+      function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+
+        db.get(
+          `SELECT c.*, u.name as user_name, u.email as user_email 
+           FROM campaigns c 
+           JOIN users u ON c.user_id = u.id 
+           WHERE c.id = ?`,
+          [this.lastID],
+          (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json(row);
+          }
+        );
+      }
+    );
+  });
 });
 
 
 router.put('/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
   const { title, description, imageUrl, goalAmount, category } = req.body;
+  const normalizedCategory = typeof category === 'string' ? category.trim() : category;
+  const finalCategory = normalizedCategory || 'Social Cause';
 
   db.get(
     "SELECT * FROM campaigns WHERE id = ? AND user_id = ?",
@@ -122,54 +138,65 @@ router.put('/:id', authenticateToken, (req, res) => {
         return res.status(404).json({ error: 'Campaign not found or unauthorized' });
       }
 
-      const updates = [];
-      const values = [];
-
-      if (title !== undefined) {
-        if (!title.trim()) return res.status(400).json({ error: 'Title cannot be empty' });
-        updates.push('title = ?');
-        values.push(title);
-      }
-      if (description !== undefined) {
-        updates.push('description = ?');
-        values.push(description);
-      }
-      if (imageUrl !== undefined) {
-        updates.push('image_url = ?');
-        values.push(imageUrl);
-      }
-      if (goalAmount !== undefined) {
-        updates.push('goal_amount = ?');
-        values.push(Number(goalAmount) || 0);
-      }
-      if (category !== undefined) {
-        updates.push('category = ?');
-        values.push(category);
-      }
-
-      updates.push("updated_at = datetime('now')");
-
-      if (updates.length === 1) { 
-        return res.status(400).json({ error: 'No fields to update' });
-      }
-
-      const sql = `UPDATE campaigns SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`;
-      values.push(id, req.userId);
-
-      db.run(sql, values, function (err) {
+      db.get("SELECT role FROM users WHERE id = ?", [req.userId], (err, user) => {
         if (err) return res.status(500).json({ error: err.message });
+        if (!user) return res.status(401).json({ error: 'User not found' });
+        if (category !== undefined && !ALLOWED_CATEGORIES.has(finalCategory)) {
+          return res.status(400).json({ error: 'Category must be either Social Cause or Business' });
+        }
+        if (user.role !== 'business' && finalCategory === 'Business') {
+          return res.status(403).json({ error: 'Only business users can publish Business campaigns' });
+        }
 
-        db.get(
-          `SELECT c.*, u.name as user_name, u.email as user_email 
-           FROM campaigns c 
-           JOIN users u ON c.user_id = u.id 
-           WHERE c.id = ?`,
-          [id],
-          (err, row) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json(row);
-          }
-        );
+        const updates = [];
+        const values = [];
+
+        if (title !== undefined) {
+          if (!title.trim()) return res.status(400).json({ error: 'Title cannot be empty' });
+          updates.push('title = ?');
+          values.push(title);
+        }
+        if (description !== undefined) {
+          updates.push('description = ?');
+          values.push(description);
+        }
+        if (imageUrl !== undefined) {
+          updates.push('image_url = ?');
+          values.push(imageUrl);
+        }
+        if (goalAmount !== undefined) {
+          updates.push('goal_amount = ?');
+          values.push(Number(goalAmount) || 0);
+        }
+        if (category !== undefined) {
+          updates.push('category = ?');
+          values.push(finalCategory);
+        }
+
+        updates.push("updated_at = datetime('now')");
+
+        if (updates.length === 1) {
+          return res.status(400).json({ error: 'No fields to update' });
+        }
+
+        const sql = `UPDATE campaigns SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`;
+        values.push(id, req.userId);
+
+        db.run(sql, values, function (err) {
+          if (err) return res.status(500).json({ error: err.message });
+
+          db.get(
+            `SELECT c.*, u.name as user_name, u.email as user_email 
+             FROM campaigns c 
+             JOIN users u ON c.user_id = u.id 
+             WHERE c.id = ?`,
+            [id],
+            (err, row) => {
+              if (err) return res.status(500).json({ error: err.message });
+              res.json(row);
+            }
+          );
+        });
       });
     }
   );

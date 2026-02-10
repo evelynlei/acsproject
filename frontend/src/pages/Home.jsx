@@ -12,30 +12,6 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-  const featuredCampaigns = [
-    {
-      id: 'feat-1',
-      title: "Clean Environment Initiative",
-      description: "A campaign to promote a clean and healthy environment through community action.",
-      image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
-      btnText: "View Campaign"
-    },
-    {
-      id: 'feat-2',
-      title: "Mental Health Awareness",
-      description: "This campaign supports mental health awareness and encourages open conversations.",
-      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
-      btnText: "Participate"
-    },
-    {
-      id: 'feat-3',
-      title: "Support Local Communities",
-      description: "Join us in building stronger communities by supporting local businesses and initiatives.",
-      image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
-      btnText: "Learn More"
-    }
-  ];
-
   useEffect(() => {
     loadCampaigns();
   }, [location.key]);
@@ -45,8 +21,8 @@ export default function Home() {
       setLoading(true);
       setError(null);
       const accessToken = tokenStorage.getAccessToken();
-      const user = tokenStorage.getUser();
-      const isAdmin = user?.is_admin === true;
+      const currentUser = tokenStorage.getUser();
+      const isAdmin = currentUser?.is_admin === true;
       
       if (accessToken && isAdmin) {
         const data = await campaignAPI.getAllCampaigns(accessToken);
@@ -106,6 +82,67 @@ export default function Home() {
     }
   };
 
+  const currentUser = tokenStorage.getUser();
+  const isAdminUser = currentUser?.is_admin === true;
+  const businessCampaigns = campaigns.filter((campaign) => campaign.category === 'Business');
+  const socialCampaigns = campaigns.filter((campaign) => campaign.category !== 'Business');
+
+  const renderCampaignGrid = (campaignList, emptyMessage) => {
+    if (loading) {
+      return (
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <div className="loading-spinner"></div>
+          <p style={{ color: '#94a3b8', marginTop: '10px' }}>Loading campaigns...</p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div style={{
+          textAlign: 'center',
+          padding: '20px',
+          color: '#ef4444',
+          background: '#fef2f2',
+          borderRadius: '12px'
+        }}>
+          {error}
+        </div>
+      );
+    }
+
+    if (campaignList.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '30px 0', color: '#94a3b8' }}>
+          {emptyMessage}
+        </div>
+      );
+    }
+
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+        gap: '24px'
+      }}>
+        {campaignList.map((campaign) => {
+          const isOwner = currentUser?.id && campaign.user_id === currentUser.id;
+          return (
+            <CampaignCard
+              key={campaign.id}
+              campaign={campaign}
+              showDelete={!!(isOwner || isAdminUser)}
+              deleteDisabled={deletingId === campaign.id}
+              onDelete={() => handleDelete(campaign.id)}
+              isAdmin={isAdminUser}
+              onAdminStatus={handleAdminStatus}
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <> 
       <main>
@@ -123,67 +160,25 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 2. NEW: Featured Initiatives (Based on your Image) */}
+        {/* 2. Business Campaigns Section */}
         <section style={{ padding: '60px 20px', backgroundColor: '#fff' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <h2 style={{ 
-              textAlign: 'center', 
-              fontSize: '32px', 
-              color: '#2c3e50', 
-              marginBottom: '40px',
-              fontWeight: '700'
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '30px'
             }}>
-              Business Campaigns
-            </h2>
-            
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-              gap: '30px' 
-            }}>
-              {featuredCampaigns.map(item => (
-                <div key={item.id} style={{
-                  background: '#fff',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.1)',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.3s ease'
-                }}>
-                  {/* Card Image */}
-                  <div style={{ height: '200px', overflow: 'hidden' }}>
-                    <img 
-                      src={item.image} 
-                      alt={item.title} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                  
-                  {/* Card Content */}
-                  <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', color: '#1e293b' }}>
-                      {item.title}
-                    </h3>
-                    <p style={{ 
-                      color: '#64748b', 
-                      fontSize: '0.95rem', 
-                      lineHeight: '1.6', 
-                      marginBottom: '20px',
-                      flex: 1 
-                    }}>
-                      {item.description}
-                    </p>
-                    <button 
-                      className="btn-filled" 
-                      style={{ width: '100%', padding: '12px', borderRadius: '8px' }}
-                    >
-                      {item.btnText}
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#2c3e50', margin: 0 }}>
+                Business Campaigns
+              </h2>
+              {!loading && !error && businessCampaigns.length > 0 && (
+                <span style={{ fontSize: '16px', color: '#94a3b8', fontWeight: '500' }}>
+                  {businessCampaigns.length} {businessCampaigns.length === 1 ? 'campaign' : 'campaigns'}
+                </span>
+              )}
             </div>
+            {renderCampaignGrid(businessCampaigns, 'No business campaigns available right now.')}
           </div>
         </section>
 
@@ -199,56 +194,13 @@ export default function Home() {
               <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#2c3e50', margin: 0 }}>
                 Social Cause Campaigns
               </h2>
-              {campaigns.length > 0 && (
+              {!loading && !error && socialCampaigns.length > 0 && (
                 <span style={{ fontSize: '16px', color: '#94a3b8', fontWeight: '500' }}>
-                  {campaigns.length} {campaigns.length === 1 ? 'campaign' : 'campaigns'}
+                  {socialCampaigns.length} {socialCampaigns.length === 1 ? 'campaign' : 'campaigns'}
                 </span>
               )}
             </div>
-
-            {loading && (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <div className="loading-spinner"></div>
-                <p style={{ color: '#94a3b8', marginTop: '10px' }}>Loading campaigns...</p>
-              </div>
-            )}
-
-            {error && !loading && (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '20px', 
-                color: '#ef4444', 
-                background: '#fef2f2', 
-                borderRadius: '12px' 
-              }}>
-                {error}
-              </div>
-            )}
-
-            {!loading && !error && (
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-                gap: '24px' 
-              }}>
-                {campaigns.map(campaign => {
-                  const user = tokenStorage.getUser();
-                  const isOwner = user?.id && campaign.user_id === user.id;
-                  const isAdmin = user?.is_admin === true;
-                  return (
-                    <CampaignCard
-                      key={campaign.id}
-                      campaign={campaign}
-                      showDelete={!!(isOwner || isAdmin)}
-                      deleteDisabled={deletingId === campaign.id}
-                      onDelete={() => handleDelete(campaign.id)}
-                      isAdmin={isAdmin}
-                      onAdminStatus={handleAdminStatus}
-                    />
-                  );
-                })}
-              </div>
-            )}
+            {renderCampaignGrid(socialCampaigns, 'No social cause campaigns available right now.')}
           </div>
         </section>
       </main>

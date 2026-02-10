@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { campaignAPI, tokenStorage } from '../api/auth';
 import Footer from '../components/Footer';
 
 const BusinessOwner = () => {
-  const navigate = useNavigate();
   const user = tokenStorage.getUser();
   const [stats, setStats] = useState({ total: 0, active: 0 });
 
@@ -45,7 +44,7 @@ const BusinessOwner = () => {
         <div style={styles.container}>
           <div style={styles.welcomeCard}>
             <h1 style={{ fontSize: '32px', color: '#1e293b', marginBottom: '10px' }}>
-              Hello, {user?.name || 'Partner'}! 👋
+              Hello, {user?.name || 'Business Owner'}! 👋
             </h1>
             <p style={{ color: '#64748b', fontSize: '18px' }}>
               Welcome to your business portal. Here you can track your impact and manage your funding goals.

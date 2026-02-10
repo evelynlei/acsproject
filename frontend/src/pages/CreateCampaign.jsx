@@ -9,8 +9,7 @@ const CreateCampaign = () => {
     title: '',
     description: '',
     goalAmount: '',
-    category: 'Social Cause',
-    imageUrl: ''
+    category: 'Social Cause'
   });
   const [focusedField, setFocusedField] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,11 +47,6 @@ const CreateCampaign = () => {
       transition: 'all 0.2s ease'
     }),
     input: { width: '100%', padding: '14px 16px', border: 'none', backgroundColor: 'transparent', fontSize: '16px', outline: 'none', boxSizing: 'border-box' },
-    previewContainer: {
-      marginTop: '16px', width: '100%', height: '250px', borderRadius: '12px',
-      border: '2px dashed #e2e8f0', backgroundColor: '#f8fafc',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', color: '#94a3b8'
-    },
     button: { width: '100%', padding: '16px', marginTop: '24px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', cursor: 'pointer' }
   };
 
@@ -77,27 +71,6 @@ const CreateCampaign = () => {
                   </div>
                 </div>
 
-                {/* Image URL & Preview */}
-                <div style={{ gridColumn: 'span 12' }}>
-                  <label style={styles.label}>Campaign Image URL</label>
-                  <div style={styles.inputWrapper('imageUrl')}>
-                    <input style={styles.input} name="imageUrl" placeholder="https://..." value={formData.imageUrl} onChange={handleChange} onFocus={() => setFocusedField('imageUrl')} onBlur={() => setFocusedField(null)} />
-                  </div>
-                  <div style={styles.previewContainer}>
-                    {formData.imageUrl ? (
-                      <img 
-                        key={formData.imageUrl} 
-                        src={formData.imageUrl} 
-                        alt="Preview" 
-                        style={{width: '100%', height: '100%', objectFit: 'cover'}} 
-                        onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<span style="color: #ef4444;">Invalid Image URL</span>'; }}
-                      />
-                    ) : (
-                      <span>Image preview will appear here</span>
-                    )}
-                  </div>
-                </div>
-
                 {/* Goal Amount */}
                 <div style={{ gridColumn: 'span 6' }}>
                   <label style={styles.label}>Fundraising Goal ($)</label>
@@ -111,10 +84,8 @@ const CreateCampaign = () => {
                   <label style={styles.label}>Category</label>
                   <div style={styles.inputWrapper('category')}>
                     <select style={styles.input} name="category" value={formData.category} onChange={handleChange}>
+                      <option value="Business">Business</option>
                       <option value="Social Cause">Social Cause</option>
-                      <option value="Environment">Environment</option>
-                      <option value="Education">Education</option>
-                      <option value="Health">Health</option>
                     </select>
                   </div>
                 </div>

@@ -43,7 +43,6 @@ const BusinessDashboard = () => {
     statCard: { backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' },
     listGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '30px' },
     campaignCard: { backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' },
-    img: { width: '100%', height: '200px', objectFit: 'cover', backgroundColor: '#f1f5f9' },
     content: { padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' },
     badge: { alignSelf: 'flex-start', padding: '4px 12px', borderRadius: '99px', fontSize: '12px', fontWeight: '600', backgroundColor: '#eff6ff', color: '#3b82f6' },
     progressBar: { height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', marginTop: '12px', overflow: 'hidden' },
@@ -83,16 +82,6 @@ const BusinessDashboard = () => {
           <div style={styles.listGrid}>
             {campaigns.map((item) => (
               <div key={item.id} style={styles.campaignCard}>
-                <img 
-                  src={item.imageUrl || item.image_url || 'https://via.placeholder.com/400x200?text=No+Image'} 
-                  style={styles.img} 
-                  alt={item.title} 
-                  onError={(e) => {
-                    e.target.onerror = null; 
-                    e.target.src = 'https://via.placeholder.com/400x200?text=Image+Error';
-                  }}
-                />
-                
                 <div style={styles.content}>
                   <span style={styles.badge}>{item.category}</span>
                   <h3 style={{ marginTop: '12px', fontSize: '18px', color: '#1e293b', fontWeight: '700' }}>{item.title}</h3>
