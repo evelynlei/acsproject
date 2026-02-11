@@ -26,13 +26,20 @@ export default function Navbar() {
     }
   }, [location]);
 
+  const getDashboardLink = () => {
+    if (!currentUser) return '/dashboard';
+    if (currentUser.is_admin === true || currentUser.role === 'admin') return '/admin';
+    if (currentUser.role === 'business') return '/business-owner';
+    return '/dashboard';
+  };
+
   const handleLogout = async () => {
     const result = await Swal.fire({
       title: 'Ready to leave?',
       text: "You will need to login again to access your dashboard.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: 'var(--primary-color)', 
+      confirmButtonColor: '#3b82f6', 
       cancelButtonColor: '#d33',
       confirmButtonText: 'Yes, log me out!',
       cancelButtonText: 'Cancel',
@@ -81,7 +88,7 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img src={logo} alt="ACS Logo" style={{ height: '50px', width: 'auto' }} />
-          <Link to="/" style={{ textDecoration: 'none', color: 'var(--primary-color)' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: '#1e293b', fontWeight: 'bold', fontSize: '1.2rem' }}>
             ACS Consulting
           </Link>
         </div>
@@ -104,10 +111,14 @@ export default function Navbar() {
             <>
               <li>
                 <Link 
-                  to={currentUser?.role === 'business' ? '/business-owner' : '/dashboard'} 
-                  className={location.pathname === '/business-owner' || location.pathname === '/dashboard' ? 'active' : ''}
+                  to={getDashboardLink()} 
+                  className={
+                    location.pathname === '/admin' || 
+                    location.pathname === '/business-owner' || 
+                    location.pathname === '/dashboard' ? 'active' : ''
+                  }
                 >
-                  Dashboard
+                  {currentUser?.is_admin || currentUser?.role === 'admin' ? 'Admin Panel' : 'Dashboard'}
                 </Link>
               </li>
 
@@ -123,24 +134,26 @@ export default function Navbar() {
               )}
 
               <li className="user-profile-section">
-                <div className="user-info-badge">
-                  <span className="user-name">
+                <div className="user-info-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 12px', background: '#f1f5f9', borderRadius: '20px' }}>
+                  <span className="user-name" style={{ fontWeight: '600', fontSize: '14px', color: '#475569' }}>
                     {currentUser?.name || 'User'}
                     {currentUser?.role === 'business' && (
-                      <span style={{ fontSize: '10px', marginLeft: '5px', opacity: 0.6, verticalAlign: 'middle' }}>
+                      <span style={{ fontSize: '10px', marginLeft: '5px', color: '#3b82f6', fontWeight: 'bold' }}>
                         (Business)
                       </span>
                     )}
                   </span>
-                  {currentUser?.is_admin === true && (
-                    <span className="admin-tag">Admin</span>
+                  {(currentUser?.is_admin === true || currentUser?.role === 'admin') && (
+                    <span className="admin-tag" style={{ backgroundColor: '#ef4444', color: 'white', fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                      Admin
+                    </span>
                   )}
                 </div>
               </li>
 
               <li>
-                <button onClick={handleLogout} className="btn-outline" style={{ padding: '5px 15px' }} disabled={isLoading}>
-                  {isLoading ? 'Logging Out...' : 'Log Out'}
+                <button onClick={handleLogout} className="btn-outline" style={{ padding: '6px 18px', borderRadius: '10px', fontSize: '14px' }} disabled={isLoading}>
+                  {isLoading ? 'Wait...' : 'Log Out'}
                 </button>
               </li>
             </>
