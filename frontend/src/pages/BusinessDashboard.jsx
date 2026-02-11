@@ -7,7 +7,10 @@ const BusinessDashboard = () => {
   const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
-  const user = tokenStorage.getUser();
+  
+  const [modal, setModal] = useState({ show: false, type: null, data: null });
+  const [editForm, setEditForm] = useState({ id: '', title: '', description: '', goal_amount: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchMyCampaigns();
@@ -17,7 +20,6 @@ const BusinessDashboard = () => {
     try {
       setLoading(true);
       const data = await campaignAPI.getUserCampaigns();
-      console.log('Fetched Campaigns:', data);
       setCampaigns(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch:', err);
@@ -26,103 +28,143 @@ const BusinessDashboard = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this campaign?')) {
-      try {
-        await campaignAPI.deleteCampaign(null, id);
-        setCampaigns(campaigns.filter(c => c.id !== id));
-      } catch (err) {
-        alert('Delete failed');
-      }
+  const openEditModal = (item) => {
+    setEditForm({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      goal_amount: item.goal_amount || item.goalAmount
+    });
+    setModal({ show: true, type: 'EDIT', data: item });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await campaignAPI.updateCampaign(null, editForm.id, editForm);
+      setCampaigns(campaigns.map(c => c.id === editForm.id ? { ...c, ...editForm } : c));
+      setModal({ show: false, type: null, data: null });
+    } catch (err) {
+      alert('Update failed: ' + err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    setSubmitting(true);
+    try {
+      await campaignAPI.deleteCampaign(null, modal.data.id);
+      setCampaigns(campaigns.filter(c => c.id !== modal.data.id));
+      setModal({ show: false, type: null, data: null });
+    } catch (err) {
+      alert('Delete failed');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const styles = {
-    container: { padding: '120px 20px 60px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' },
-    statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' },
-    statCard: { backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' },
+    container: { padding: '120px 20px 60px', maxWidth: '1200px', margin: '0 auto' },
     listGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '30px' },
-    campaignCard: { backgroundColor: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' },
-    content: { padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' },
-    badge: { alignSelf: 'flex-start', padding: '4px 12px', borderRadius: '99px', fontSize: '12px', fontWeight: '600', backgroundColor: '#eff6ff', color: '#3b82f6' },
-    progressBar: { height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', marginTop: '12px', overflow: 'hidden' },
-    progressFill: (percent) => ({ width: `${Math.min(percent, 100)}%`, height: '100%', backgroundColor: '#3b82f6' }),
-    actionBtn: { padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px', transition: 'all 0.2s' }
+    campaignCard: { backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', padding: '20px' },
+    actionBtn: { padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px', transition: 'all 0.2s' },
+    overlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    modal: { backgroundColor: 'white', padding: '32px', borderRadius: '24px', width: '90%', maxWidth: '450px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', animation: 'popIn 0.3s ease-out' },
+    input: { width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e2e8f0', marginBottom: '16px', fontSize: '16px', boxSizing: 'border-box' }
   };
 
   return (
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       <div style={styles.container}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-          <div>
-            <h1 style={{ fontSize: '32px', color: '#1e293b' }}>Campaign Management</h1>
-            <p style={{ color: '#64748b' }}>Edit, update, or remove your active fundraising projects.</p>
-          </div>
-          <Link to="/create-campaign" style={{ ...styles.actionBtn, backgroundColor: '#3b82f6', color: 'white', textDecoration: 'none' }}>
-            + Create New Campaign
-          </Link>
-        </div>
-
-        <div style={styles.statsGrid}>
-          <div style={styles.statCard}>
-            <p style={{ color: '#64748b', fontSize: '14px' }}>Total Projects</p>
-            <h3 style={{ fontSize: '28px', color: '#1e293b' }}>{campaigns.length}</h3>
-          </div>
-          <div style={styles.statCard}>
-            <p style={{ color: '#64748b', fontSize: '14px' }}>Target Goal</p>
-            <h3 style={{ fontSize: '28px', color: '#1e293b' }}>
-              ${campaigns.reduce((acc, curr) => acc + (Number(curr.goal_amount || curr.goalAmount) || 0), 0).toLocaleString()}
-            </h3>
-          </div>
+          <h1>Campaign Management</h1>
+          <Link to="/create-campaign" style={{ ...styles.actionBtn, backgroundColor: '#3b82f6', color: 'white', textDecoration: 'none' }}>+ New Campaign</Link>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>
-        ) : campaigns.length > 0 ? (
+          <div style={{ textAlign: 'center' }}>Loading...</div>
+        ) : (
           <div style={styles.listGrid}>
             {campaigns.map((item) => (
               <div key={item.id} style={styles.campaignCard}>
-                <div style={styles.content}>
-                  <span style={styles.badge}>{item.category}</span>
-                  <h3 style={{ marginTop: '12px', fontSize: '18px', color: '#1e293b', fontWeight: '700' }}>{item.title}</h3>
-                  <p style={{ color: '#64748b', fontSize: '14px', margin: '10px 0', flex: 1 }}>
-                    {item.description?.substring(0, 100)}{item.description?.length > 100 ? '...' : ''}
-                  </p>
-                  
-                  <div style={{ marginTop: 'auto' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '700', color: '#475569' }}>
-                      <span>Goal: ${item.goal_amount || item.goalAmount}</span>
-                      <span>0%</span>
-                    </div>
-                    <div style={styles.progressBar}><div style={styles.progressFill(0)}></div></div>
-                  </div>
-
-                  <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                    <button 
-                      onClick={() => navigate(`/edit-campaign/${item.id}`)}
-                      style={{ ...styles.actionBtn, backgroundColor: '#f1f5f9', color: '#475569', flex: 1 }}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(item.id)}
-                      style={{ ...styles.actionBtn, backgroundColor: '#fef2f2', color: '#ef4444', flex: 1 }}
-                    >
-                      Delete
-                    </button>
-                  </div>
+                <span style={{ fontSize: '12px', color: '#3b82f6', fontWeight: '700' }}>{item.category}</span>
+                <h3 style={{ margin: '10px 0' }}>{item.title}</h3>
+                <p style={{ color: '#64748b', fontSize: '14px', flex: 1 }}>{item.description}</p>
+                <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                  <button onClick={() => openEditModal(item)} style={{ ...styles.actionBtn, backgroundColor: '#f1f5f9', color: '#475569', flex: 1 }}>Edit</button>
+                  <button onClick={() => setModal({ show: true, type: 'DELETE', data: item })} style={{ ...styles.actionBtn, backgroundColor: '#fef2f2', color: '#ef4444', flex: 1 }}>Delete</button>
                 </div>
               </div>
             ))}
           </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '80px', backgroundColor: 'white', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
-            <p style={{ color: '#64748b', fontSize: '18px' }}>No campaigns found.</p>
-            <Link to="/create-campaign" style={{ color: '#3b82f6', fontWeight: '600', textDecoration: 'none' }}>Create your first one now →</Link>
-          </div>
         )}
       </div>
+
+      {modal.show && (
+        <div style={styles.overlay} onClick={() => !submitting && setModal({ show: false, type: null, data: null })}>
+          <div style={styles.modal} onClick={e => e.stopPropagation()}>
+            
+            {modal.type === 'EDIT' && (
+              <form onSubmit={handleUpdate}>
+                <h2 style={{ marginBottom: '20px' }}>Edit Campaign</h2>
+                <label style={{ display: 'block', textAlign: 'left', fontSize: '14px', fontWeight: '600', marginBottom: '5px' }}>Title</label>
+                <input 
+                  style={styles.input} 
+                  value={editForm.title} 
+                  onChange={e => setEditForm({...editForm, title: e.target.value})} 
+                  required 
+                />
+                
+                <label style={{ display: 'block', textAlign: 'left', fontSize: '14px', fontWeight: '600', marginBottom: '5px' }}>Description</label>
+                <textarea 
+                  style={{ ...styles.input, minHeight: '100px', resize: 'none' }} 
+                  value={editForm.description} 
+                  onChange={e => setEditForm({...editForm, description: e.target.value})} 
+                  required 
+                />
+
+                <label style={{ display: 'block', textAlign: 'left', fontSize: '14px', fontWeight: '600', marginBottom: '5px' }}>Goal Amount ($)</label>
+                <input 
+                  type="number"
+                  style={styles.input} 
+                  value={editForm.goal_amount} 
+                  onChange={e => setEditForm({...editForm, goal_amount: e.target.value})} 
+                  required 
+                />
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button type="button" onClick={() => setModal({ show: false })} style={{ ...styles.actionBtn, backgroundColor: '#f1f5f9', flex: 1 }}>Cancel</button>
+                  <button type="submit" disabled={submitting} style={{ ...styles.actionBtn, backgroundColor: '#3b82f6', color: 'white', flex: 1 }}>
+                    {submitting ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {modal.type === 'DELETE' && (
+              <>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+                <h2 style={{ marginBottom: '12px' }}>Confirm Delete</h2>
+                <p style={{ color: '#64748b', marginBottom: '28px' }}>Are you sure you want to delete <strong>"{modal.data?.title}"</strong>?</p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button onClick={() => setModal({ show: false })} style={{ ...styles.actionBtn, backgroundColor: '#f1f5f9', flex: 1 }}>Cancel</button>
+                  <button onClick={confirmDelete} disabled={submitting} style={{ ...styles.actionBtn, backgroundColor: '#ef4444', color: 'white', flex: 1 }}>
+                    {submitting ? 'Deleting...' : 'Delete Now'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <Footer />
+      <style>{`
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        button:active { transform: scale(0.97); }
+      `}</style>
     </div>
   );
 };
