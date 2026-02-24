@@ -92,7 +92,7 @@ export default function CampaignCard({ campaign, showDelete = false, onDelete, d
         <h3 className="campaign-title">{campaign.title}</h3>
         <p className="campaign-description">{campaign.description}</p>
       </div>
-
+      <div className="campaign-admin-divider"></div>
       {isAdmin && (
         <div className="campaign-admin-actions">
           {(campaign.status !== 'Approved') && (

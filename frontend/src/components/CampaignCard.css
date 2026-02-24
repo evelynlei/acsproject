@@ -182,6 +182,12 @@
   z-index: 2;
 }
 
+.campaign-admin-divider {
+  height: 1px;
+  background-color: #ffffff;
+  margin: 10px 0;
+}
+
 .campaign-admin-actions .campaign-admin-approve,
 .campaign-admin-actions .campaign-admin-reject {
   padding: 6px 12px;
