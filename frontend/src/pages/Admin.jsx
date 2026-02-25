@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { tokenStorage, authAPI } from '../api/auth'; 
+import { tokenStorage } from '../api/auth';
 import Footer from '../components/Footer';
 
 export default function Admin() {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function Admin() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/users', {
+      const response = await fetch(`${API_BASE}/users`, {
         headers: { 'Authorization': `Bearer ${tokenStorage.getAccessToken()}` }
       });
       const data = await response.json();
