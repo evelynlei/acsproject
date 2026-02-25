@@ -17,6 +17,9 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [editingId, setEditingId] = useState(null);
 
+  const [deleteModal, setDeleteModal] = useState({ show: false, campaignId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const isNewUser = location.state?.isNewUser === true;
 
   useEffect(() => {
@@ -82,14 +85,28 @@ export default function Dashboard() {
     setFormData({ title: '', description: '' });
   };
 
-  const handleDelete = async (campaignId) => {
-    if (!confirm('Are you sure you want to delete this campaign?')) return;
+  const openDeleteModal = (id) => {
+    setDeleteModal({ show: true, campaignId: id });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ show: false, campaignId: null });
+  };
+
+  const confirmDelete = async () => {
+    const campaignId = deleteModal.campaignId;
+    if (!campaignId) return;
+
+    setIsDeleting(true);
     try {
       const accessToken = tokenStorage.getAccessToken();
       await campaignAPI.deleteCampaign(accessToken, campaignId);
       setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+      closeDeleteModal();
     } catch (err) {
-      alert(err.message || 'Failed to delete campaign');
+      setError(err.message || 'Failed to delete campaign');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -110,7 +127,7 @@ export default function Dashboard() {
         <div className="dashboard-grid">
           <section className="post-campaign-card">
             <h3>{editingId ? 'Edit Campaign' : 'Post a New Campaign'}</h3>
-            {error && <div className="error-box">{error}</div>}
+            {error && <div className="error-box" style={{ background: '#fef2f2', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '15px' }}>{error}</div>}
             <form onSubmit={handleSubmit}>
               <div className="input-group">
                 <label>Campaign Title *</label>
@@ -155,14 +172,14 @@ export default function Dashboard() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {campaigns.map(campaign => (
-                    <div key={campaign.id} className="campaign-item-container">
+                    <div key={campaign.id} className="campaign-item-container" style={{ border: '1px solid #e2e8f0', borderRadius: '16px', padding: '15px', background: '#fff' }}>
                       <CampaignCard campaign={campaign} />
                       <div className="action-btns" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                        <button className="btn-outline" onClick={() => handleEdit(campaign)}>Edit</button>
+                        <button className="btn-outline" onClick={() => handleEdit(campaign)} style={{ padding: '8px 16px', fontSize: '14px' }}>Edit</button>
                         <button 
                           className="btn-danger" 
-                          onClick={() => handleDelete(campaign.id)}
-                          style={{ background: '#dc3545', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}
+                          onClick={() => openDeleteModal(campaign.id)}
+                          style={{ background: '#fef2f2', color: '#ef4444', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
                         >
                           Delete
                         </button>
@@ -175,7 +192,65 @@ export default function Dashboard() {
           </section>
         </div>
       </main>
+
+      {deleteModal.show && (
+        <div style={overlayStyle} onClick={closeDeleteModal}>
+          <div style={modalStyle} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '40px', marginBottom: '10px' }}>🗑️</div>
+            <h2 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>Confirm Deletion</h2>
+            <p style={{ color: '#64748b', marginBottom: '25px', lineHeight: '1.5' }}>
+              Are you sure you want to remove this campaign? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={closeDeleteModal}
+                style={cancelBtnStyle}
+              >
+                Go Back
+              </button>
+              <button 
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                style={deleteBtnStyle}
+              >
+                {isDeleting ? 'Removing...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
+
+      <style>{`
+        @keyframes modalPop {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </>
   );
 }
+
+const overlayStyle = {
+  position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)',
+  backdropFilter: 'blur(4px)', zIndex: 1000,
+  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+};
+
+const modalStyle = {
+  backgroundColor: '#fff', padding: '30px', borderRadius: '20px',
+  width: '100%', maxWidth: '380px', textAlign: 'center',
+  boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+  animation: 'modalPop 0.2s ease-out'
+};
+
+const cancelBtnStyle = {
+  flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0',
+  background: '#fff', color: '#64748b', fontWeight: '600', cursor: 'pointer'
+};
+
+const deleteBtnStyle = {
+  flex: 1, padding: '12px', borderRadius: '10px', border: 'none',
+  background: '#ef4444', color: '#fff', fontWeight: '600', cursor: 'pointer'
+};
