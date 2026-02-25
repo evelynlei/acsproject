@@ -1,5 +1,13 @@
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcryptjs');
 const db = new sqlite3.Database('./db.sqlite');
+
+const DEFAULT_ADMIN_HASH = '$2a$10$IDPM4nv.KQ0iXeaZDnrkjOiLeSWtXz.26ace6dIYL6m0AWJHqS.d.';
+const ADMIN_NAME = process.env.ADMIN_NAME || 'Admin';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'eve@gmail.com';
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD
+    ? bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10)
+    : DEFAULT_ADMIN_HASH;
 
 db.serialize(() => {
     db.run("PRAGMA foreign_keys = ON");
@@ -34,11 +42,29 @@ db.serialize(() => {
     );
 
     db.run(
-        `INSERT OR IGNORE INTO users (id ,name, email, password, role, is_admin)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [9, 'eve', 'eve@gmail.com', '$2a$10$IDPM4nv.KQ0iXeaZDnrkjOiLeSWtXz.26ace6dIYL6m0AWJHqS.d.', 'user', 1],
+        `INSERT OR IGNORE INTO users (name, email, password, role, is_admin)
+         VALUES (?, ?, ?, ?, ?)`,
+        [ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD_HASH, 'user', 1],
         (err) => { if (err) console.error('Error seeding admin user:', err.message); }
     );
+
+    db.run(
+        "UPDATE users SET is_admin = 1 WHERE email = ?",
+        [ADMIN_EMAIL],
+        (err) => {
+            if (err) console.error('Error enforcing admin flag:', err.message);
+        }
+    );
+
+    if (process.env.ADMIN_PASSWORD) {
+        db.run(
+            "UPDATE users SET password = ? WHERE email = ?",
+            [ADMIN_PASSWORD_HASH, ADMIN_EMAIL],
+            (err) => {
+                if (err) console.error('Error updating admin password:', err.message);
+            }
+        );
+    }
     
     db.run(`CREATE TABLE IF NOT EXISTS refresh_tokens (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
