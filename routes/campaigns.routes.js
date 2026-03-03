@@ -6,6 +6,10 @@ const requireAdmin = require('../middleware/requireAdmin');
 const router = express.Router();
 const ALLOWED_CATEGORIES = new Set(['Social Cause', 'Business']);
 
+const getWordCount = (str) => {
+  if (!str) return 0;
+  return str.trim().split(/\s+/).filter(word => word.length > 0).length;
+};
 
 router.get('/public', (req, res) => {
   db.all(
@@ -22,7 +26,6 @@ router.get('/public', (req, res) => {
   );
 });
 
-
 router.get('/', authenticateToken, (req, res) => {
   db.all(
     `SELECT c.*, u.name as user_name, u.email as user_email 
@@ -38,7 +41,6 @@ router.get('/', authenticateToken, (req, res) => {
   );
 });
 
-
 router.get('/all', authenticateToken, requireAdmin, (req, res) => {
   db.all(
     `SELECT c.*, u.name as user_name, u.email as user_email 
@@ -52,7 +54,6 @@ router.get('/all', authenticateToken, requireAdmin, (req, res) => {
     }
   );
 });
-
 
 router.get('/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
@@ -71,7 +72,6 @@ router.get('/:id', authenticateToken, (req, res) => {
   );
 });
 
-
 router.post('/', authenticateToken, (req, res) => {
   const { title, description, imageUrl, goalAmount, category } = req.body;
   const normalizedCategory = typeof category === 'string' ? category.trim() : category;
@@ -80,6 +80,11 @@ router.post('/', authenticateToken, (req, res) => {
   if (!title) {
     return res.status(400).json({ error: 'Title is required' });
   }
+
+  if (description && getWordCount(description) > 300) {
+    return res.status(400).json({ error: 'Description exceeds the limit of 300 words' });
+  }
+
   if (!ALLOWED_CATEGORIES.has(finalCategory)) {
     return res.status(400).json({ error: 'Category must be either Social Cause or Business' });
   }
@@ -122,7 +127,6 @@ router.post('/', authenticateToken, (req, res) => {
   });
 });
 
-
 router.put('/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
   const { title, description, imageUrl, goalAmount, category } = req.body;
@@ -136,6 +140,10 @@ router.put('/:id', authenticateToken, (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
       if (!campaign) {
         return res.status(404).json({ error: 'Campaign not found or unauthorized' });
+      }
+
+      if (description !== undefined && getWordCount(description) > 300) {
+        return res.status(400).json({ error: 'Description exceeds the limit of 300 words' });
       }
 
       db.get("SELECT role FROM users WHERE id = ?", [req.userId], (err, user) => {
@@ -202,7 +210,6 @@ router.put('/:id', authenticateToken, (req, res) => {
   );
 });
 
-
 router.put('/:id/status', authenticateToken, requireAdmin, (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -233,7 +240,6 @@ router.put('/:id/status', authenticateToken, requireAdmin, (req, res) => {
     }
   );
 });
-
 
 router.delete('/:id', authenticateToken, (req, res) => {
   const { id } = req.params;
