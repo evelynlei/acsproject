@@ -139,7 +139,7 @@ export default function Register() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="reg-pass"
-                  placeholder="At least 12 characters..."
+                  placeholder="Enter your password"
                   required
                   value={formData.password}
                   onChange={handleInputChange}
