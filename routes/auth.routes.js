@@ -16,11 +16,18 @@ router.post('/register', (req, res) => {
   if (!name || !email || !password)
     return res.status(400).json({ error: 'Missing required fields' });
 
-  if (password.length < 6)
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  if (password.length < 12) {
+    return res.status(400).json({ error: 'Password must be at least 12 characters long' });
+  }
 
-  if (!/[A-Z]/.test(password))
-    return res.status(400).json({ error: 'Password must contain at least one capital letter' });
+  if (!/\d/.test(password)) {
+    return res.status(400).json({ error: 'Password must contain at least one digit' });
+  }
+
+  const symbolRegex = /[!@#$%^&*(),.?":{}|<>]/;
+  if (!symbolRegex.test(password)) {
+    return res.status(400).json({ error: 'Password must contain at least one special symbol' });
+  }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
 
